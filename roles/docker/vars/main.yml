@@ -1,0 +1,10 @@
+#DOCKER
+docker_package_name: docker-ce
+
+#DOCKER_UBUNTU
+docker_gpgkey: https://download.docker.com/linux/ubuntu/gpg
+docker_repo:  deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+
+#DOCKER_CENTOS
+docker_repo_url: https://download.docker.com/linux/centos/docker-ce.repo
+docker_repo_path: /etc/yum.repos.d/docker-ce.repo

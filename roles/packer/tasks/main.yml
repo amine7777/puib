@@ -1,0 +1,35 @@
+
+---
+#UBUNTU
+- name: install git/gitflow/wget/unzip/vim
+  apt:
+   name: "{{ item }}"
+  with_items:
+   - git
+   - vim
+   - wget
+   - unzip
+  when: ansible_distribution == "Ubuntu"
+
+#CENTOS
+- name: install  git/gitflow/wget/unzip/vim
+  yum:
+   name: "{{ item }}"
+  with_items:
+   - git
+   - vim
+   - wget
+   - unzip
+  when: ansible_distribution == "CentOS"
+
+- name: Download packer
+  command: wget "{{ packer_url }}"
+
+- name: unzip packer
+  command: unzip packer_"{{ packer_version }}"_linux_amd64.zip
+
+- name: move packer
+  command: mv packer "{{ packer_repo_path }}"
+
+- name: remove zip file
+  command: rm -f packer_"{{ packer_version }}"_linux_amd64.zip

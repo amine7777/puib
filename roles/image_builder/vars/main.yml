@@ -1,0 +1,165 @@
+
+##############PACKER UNIVERSAL IMAGE_BUILDER###################"
+
+# provisioners varibales
+provisioners_type_shell: shell
+provisioners_type_ansible: ansible-local
+provisioners_playbook: /root/puib/deploy_installation.yaml
+provisioners_extravars: '-e  env=dev'
+
+
+## shell
+command_rehl:
+  - '"yum -y update",'
+  - '"yum install -y python-devel",'
+  - '"yum install -y openssl-devel",'
+  - '"yum install -y libffi-devel",'
+  - '"yum install -y python-pip",'
+  - '"pip install --upgrade pip",'
+  - '"pip install ansible",'
+  - '"pip install --upgrade setuptools"'
+
+command_debian:
+  - '"apt-get update",'
+  - '"apt-get install software-properties-common -y",'
+  - '"apt-add-repository ppa:ansible/ansible -y",'
+  - '"apt-get update",'
+  - '"apt-get install ansible -y"'
+
+#DOCKER_IMAGE
+postprocessors_type: docker-tag
+docker_repo: aminetity/puib
+docker_tag: 0.1
+
+#variable to match with the properties
+mytemplate: 'azure-centos'
+
+#Azure Object
+template_azure:
+  - vm_type_name: azure-centos
+    image_type: azure-arm
+    client_id: client_id
+    client_secret: secret_id
+    subscription_id: subscription_id
+    tenant_id: tenant_id
+    resource_group: myResourceGroup-rg
+    packer_image_name: packer-image-centos
+    vm_size: Standard_D2_V2
+    azure_location: northeurope
+    azure_tag_dept: Engineering
+    azure_tag_task: Image deployment
+    os_type: Linux
+    image_publisher: OpenLogic
+    image_offer: CentOS
+    image_sku: 7.5
+    resource_group_shared_gallery: shared-rg
+    gallery_name: generali
+    image_definition: cassandra
+    image_version: 1.0.0
+    replication_regions: ['eastus']
+    share: false
+
+  - vm_type_name: azure-ubuntu
+    image_type: azure-arm
+    client_id: client_id
+    client_secret: secret_id
+    subscription_id: subscription_id
+    tenant_id: tenant_id
+    resource_group: myResourceGroup-rg
+    packer_image_name: packer-image-ubuntu
+    vm_size: Standard_D2_V2
+    azure_location: northeurope
+    azure_tag_dept: Engineering
+    azure_tag_task: Image deployment
+    os_type: Linux
+    image_publisher: Canonical
+    image_offer: UbuntuServer
+    image_sku: 16.04-LTS
+    resource_group_shared_gallery: shared-rg
+    gallery_name: tech_gallery
+    image_definition: cassandra
+    image_version: 1.0.0
+    replication_regions: ['eastus']
+    share: false
+    #another type of VM to add
+
+#Google Object
+template_google:
+  - vm_type_name: google-centos
+    image_type: googlecompute
+    account_file: "path_to_your_json_file"
+    project_id: imagebuilder
+    source_image: centos-7-v20190813
+    machine_type: n1-standard-1
+    gcp_ssh_username: packer
+    zone: europe-west1-b
+    gcp_region: europe-west
+    gcp_image_description: custom machine image
+    gcp_name_image: img-packer
+    disk_size: 10
+    state_timeout: 20m
+
+
+  - vm_type_name: google-ubuntu
+    image_type: googlecompute
+    account_file: "path_to_your_json_file"
+    project_id: argon-triode-87413
+    source_image_family: ubuntu
+    machine_type: n1-standard-1
+    gcp_ssh_username: packer
+    zone: europe-west1-b
+    gcp_region: europe-west1
+    gcp_image_description: custom machine image
+    gcp_name_image: img-packer
+    disk_size: 10
+    state_timeout: 20m
+
+    #another type of VM to add
+
+#Amazon Object
+template_amazon:
+  - vm_type_name: amazon-centos
+    image_type: amazon-ebs
+    access_key: "access_key"
+    secret_key: "secret_key"
+    ami_name: puib
+    instance_type: t2.micro
+    region: eu-west-3
+    virtualization_type: hvm
+    image_name: centos/images/*centos-7*
+    root_device_type: ebs
+    owners: "owners_ID"
+    aws_ssh_username: centos
+    most_recent: true
+
+  - vm_type_name: amazon-ubuntu
+    image_type: amazon-ebs
+    access_key: "access_key"
+    secret_key: "secret_key"
+    ami_name: puib
+    instance_type: t2.micro
+    region: eu-west-3
+    virtualization_type: hvm
+    image_name: ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*
+    root_device_type: ebs
+    owners: "owners_ID"
+    aws_ssh_username: ubuntu
+    most_recent: true
+    #another type of VM to add
+
+#Docker Object
+template_docker:
+  - vm_type_name: docker-centos
+    image_type: docker
+    image: centos
+    image_tag: 7
+    commit: true
+
+  - vm_type_name: docker-ubuntu
+    image_type: docker
+    image: ubuntu
+    image_tag: 16.04
+    commit: true
+    #another type of container to add
+
+#another type of cloud provider to add

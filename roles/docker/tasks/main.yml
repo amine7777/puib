@@ -1,0 +1,40 @@
+---
+
+#Ubuntu
+  - name: Install prerequisites
+    apt: name={{item}} update_cache=yes
+    with_items:
+     - apt-transport-https
+     - ca-certificates
+     - curl
+     - software-properties-common
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Add Docker GPG key
+    apt_key: url= "{{ docker_gpgkey }}"
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Add Docker APT repository
+    apt_repository:
+      repo: "{{ docker_repo }}"
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Docker
+    apt: name= "{{ docker_package_name }}"
+    when: ansible_distribution == "Ubuntu"
+
+
+#CentOS
+  - name: Add Docker repo
+    get_url:
+      url: "{{ docker_repo_url }}"
+      dest: "{{ docker_repo_path }}"
+    become: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: Install Docker
+    package:
+      name: "{{ docker_package_name }}"
+      state: latest
+    become: yes
+    when: ansible_distribution == "CentOS"

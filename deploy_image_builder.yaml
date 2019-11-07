@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  become_user: root
+
+  roles:
+   - { role: ~/puib/roles/image_builder }

@@ -1,0 +1,162 @@
+{
+
+"builders": [{
+
+{% for k in  template_azure %}
+   {% if k['vm_type_name']==mytemplate %}
+
+      "type": "{{ k['image_type'] }}",
+      "client_id": "{{ k['client_id'] }}",
+      "client_secret": "{{ k['client_secret'] }}",
+      "subscription_id": "{{ k['subscription_id'] }}",
+      "tenant_id": "{{ k['tenant_id'] }}",
+
+      {% if k['share']==true %}
+           "shared_image_gallery_destination": {
+                "resource_group": "{{ k['resource_group_shared_gallery'] }}",
+                "gallery_name": "{{ k['gallery_name'] }}",
+                "image_name": "{{ k['image_definition'] }}",
+                "image_version": "{{ k['image_version'] }}",
+                "replication_regions": "{{ k['replication_regions'] }}"
+                },
+      {% endif %}
+
+      "managed_image_resource_group_name": "{{ k['resource_group'] }}",
+      "managed_image_name": "{{ k['packer_image_name'] }}",
+
+
+      "os_type": "{{ k['os_type'] }}",
+      "image_publisher": "{{ k['image_publisher']}}",
+      "image_offer": "{{ k['image_offer']}}",
+      "image_sku": "{{ k['image_sku'] }}",
+
+
+      "azure_tags": {
+        "dept": "{{ k['azure_tag_dept'] }}",
+        "task": "{{ k['azure_tag_task'] }}"
+      },
+      "location": "{{ k['azure_location'] }}",
+      "vm_size": "{{ k['vm_size'] }}"
+
+  {% endif %}
+{% endfor %}
+
+
+{% for i in  template_google %}
+   {% if i['vm_type_name']== mytemplate %}
+
+        "type": "{{ i['image_type'] }}",
+        "account_file": "{{ i['account_file'] }}",
+        "project_id": "{{ i['project_id'] }}",
+        "machine_type": "{{ i['machine_type'] }}",
+        "source_image": "{{ i['source_image'] }}",
+        "ssh_username": "{{ i['gcp_ssh_username'] }}",
+        "region": "{{ i['gcp_region'] }}",
+        "image_description": "{{ i['gcp_image_description'] }}",
+        "image_name": "{{ i['gcp_name_image'] }}",
+        "disk_size": "{{ i['disk_size'] }}",
+        "state_timeout": "{{ i['state_timeout'] }}",
+        "zone": "{{ i['zone'] }}"
+  {% endif %}
+{% endfor %}
+
+
+{% for p in  template_amazon %}
+   {% if p['vm_type_name']== mytemplate %}
+
+       "type": "{{ p['image_type'] }}",
+       "access_key": "{{ p['access_key'] }}",
+       "secret_key": "{{ p['secret_key'] }}",
+       "ami_name": "{{ p['ami_name'] }}",
+       "instance_type": "{{ p['instance_type'] }}",
+       "region": "{{ p['region'] }}",
+       "source_ami_filter": {
+         "filters": {
+         "virtualization-type": "{{ p['virtualization_type'] }}",
+         "name": "{{ p['image_name'] }}",
+         "root-device-type": "{{ p['root_device_type'] }}"
+         },
+         "owners": ["{{ p['owners'] }}"],
+         "most_recent": "{{ p['most_recent'] }}"
+       },
+       "ssh_username": "{{ p['aws_ssh_username'] }}"
+  {% endif %}
+{% endfor %}
+
+{% for q in template_docker %}
+   {% if q['vm_type_name']== mytemplate %}
+
+
+   "type": "{{ q['image_type']}}",
+   "image": "{{ q['image'] }}:{{ q['image_tag'] }}",
+   "commit": "{{ q['commit'] }}"
+
+
+  {% endif %}
+{% endfor %}
+
+
+  }],
+
+ "provisioners": [
+
+{
+
+      "type": "{{ provisioners_type_shell }}",
+
+
+      {% if 'docker' not in mytemplate %}
+       "execute_command":"echo 'packer' | sudo -S -E env {% raw %} {{ .Vars }} {{ .Path }} {% endraw %}",
+      {% endif %}
+
+
+
+      "inline": [
+      "echo '%sudo    ALL=(ALL)  NOPASSWD:ALL' >> /etc/sudoers",
+
+  {% if 'centos' in mytemplate -%}
+
+      {% if 'google' not in mytemplate  %}
+              "rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm",
+      {% endif %}
+    {% for item in command_rehl %}
+        {{ item }}
+    {% endfor %}
+
+  {% elif 'ubuntu'in mytemplate %}
+    {% for item in command_debian%}
+        {{ item }}
+    {% endfor %}
+
+  {% endif %}
+
+    ]},
+
+     {
+     "type": "{{ provisioners_type_ansible }}",
+     "playbook_dir": "./",
+     "playbook_file": "{{ provisioners_playbook }}",
+     "extra_arguments": "{{ provisioners_extravars }}"
+
+   }
+  ]
+
+
+  {% for q in template_docker %}
+     {% if q['vm_type_name']== mytemplate %}
+  ,
+
+  "post-processors": [
+    [
+      {
+        "type": "{{ postprocessors_type }}",
+        "repository": "{{ docker_repo }}",
+        "tag": "{{ docker_tag }}"
+      },
+        "docker-push"
+    ]
+  ]
+{% endif -%}
+{% endfor %}
+
+}

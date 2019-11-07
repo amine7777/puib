@@ -1,0 +1,26 @@
+---
+
+#Ansible execute as root
+#Change USER to root and run cd ~/image_builder
+- name: create a directory
+  file:
+    path: /root/image_builder
+    state: directory
+
+#This task parse the jinja file and the json file
+- name: copy the json file into image_builder directory
+  template:
+    src: template.json.j2
+    dest: /root/image_builder/template.json
+
+#This task verify if somthing is wrong with the template
+- name: Validate the template
+  command: packer validate /root/image_builder/template.json
+
+#This task execute the json file/the packer template
+#Please verify that you docker daemon is ON and you logged in
+#Please verify your Docker tag and version to match with you account
+#Please verify that you are connected to you cloud provider
+#Please verify that your credentials are settled correctly
+- name: Execute the template
+  command: packer build  /root/image_builder/template.json
